@@ -19,8 +19,11 @@
 </select>
 
 <!-- NEW: Place Autocomplete Elements -->
-<gmp-place-autocomplete id="from" placeholder="Start"></gmp-place-autocomplete>
-<gmp-place-autocomplete id="to" placeholder="Destination"></gmp-place-autocomplete>
+<!-- <gmp-place-autocomplete id="from" placeholder="Start"></gmp-place-autocomplete>
+<gmp-place-autocomplete id="to" placeholder="Destination"></gmp-place-autocomplete> -->
+
+<gmp-place-autocomplete id="from" placeholder="Start" fields="place_id,geometry,name,formatted_address"></gmp-place-autocomplete>
+<gmp-place-autocomplete id="to" placeholder="Destination" fields="place_id,geometry,name,formatted_address"></gmp-place-autocomplete>
 
 <button onclick="calculateRoute()">Find Route</button>
 
@@ -56,11 +59,42 @@ function calculateRoute() {
       const route = result.routes[0].legs[0];
       document.getElementById("output").innerHTML =
         `Distance: ${route.distance.text} <br> Duration: ${route.duration.text}`;
+
+      // Example: show bus arrivals at Sengkang MRT (67009)
+      getBusArrival("67009");
     } else {
       alert("Route not found");
     }
   });
 }
+
+const fromInput = document.getElementById("from");
+fromInput.addEventListener("place_changed", () => {
+  const place = fromInput.getPlace();
+  console.log("Selected place details:", place);
+});
+
+
+async function getBusArrival(busStopCode) {
+  const response = await fetch(
+    `https://datamall.lta.gov.sg/ltaodataservice/BusArrivalv2?BusStopCode=${busStopCode}`,
+    {
+      headers: {
+        AccountKey: "yfIxrlYLTZCoIpi4Tt+joQ=="
+      }
+    }
+  );
+  const data = await response.json();
+  console.log(data.Services); // Debug: see bus services in console
+
+  // Display bus arrival info
+  let output = "<h3>Bus Arrival Times</h3>";
+  data.Services.forEach(service => {
+    output += `Bus ${service.ServiceNo} → Next: ${service.NextBus.EstimatedArrival} <br>`;
+  });
+  document.getElementById("output").innerHTML += output;
+}
+
 </script>
 
 <!-- IMPORTANT: load Maps JS with places -->
