@@ -29,10 +29,11 @@
 <div id="output"></div>
 
 <script>
-const GOOGLE_MAPS_API_KEY = "";
-const LTA_ACCOUNT_KEY = "";
-
 let map, directionsService, directionsRenderer;
+
+function getAppConfig() {
+  return window.APP_CONFIG || {};
+}
 
 function showSetupMessage(message) {
   document.getElementById("status").textContent = message;
@@ -50,6 +51,8 @@ function initMap() {
 }
 
 function loadGoogleMaps() {
+  const { GOOGLE_MAPS_API_KEY } = getAppConfig();
+
   if (!GOOGLE_MAPS_API_KEY) {
     showSetupMessage("Google Maps is not configured in this public copy.");
     document.getElementById("output").textContent = "Add your own Google Maps API key to enable routing and map display.";
@@ -93,6 +96,8 @@ function calculateRoute() {
 
 
 async function getBusArrival(busStopCode) {
+  const { LTA_ACCOUNT_KEY } = getAppConfig();
+
   if (!LTA_ACCOUNT_KEY) {
     document.getElementById("output").innerHTML += "<p>Bus arrival lookup is not configured in this public copy.</p>";
     return;
@@ -117,10 +122,23 @@ async function getBusArrival(busStopCode) {
   document.getElementById("output").innerHTML += output;
 }
 
+function loadScript(src) {
+  return new Promise((resolve) => {
+    const script = document.createElement("script");
+    script.src = src;
+    script.onload = () => resolve(true);
+    script.onerror = () => resolve(false);
+    document.head.appendChild(script);
+  });
+}
+
 </script>
 
 <script>
-  loadGoogleMaps();
+  (async () => {
+    await loadScript("config.js");
+    loadGoogleMaps();
+  })();
 </script>
 
 </body>
