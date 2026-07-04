@@ -1,0 +1,73 @@
+
+<!DOCTYPE html>
+<html>
+<head>
+  <title>GoThere Prototype</title>
+  <style>
+    #map { height: 500px; width: 100%; }
+  </style>
+</head>
+<body>
+
+<h2>GoThere Prototype</h2>
+
+<select id="mode">
+  <option value="DRIVING">Driving</option>
+  <option value="WALKING">Walking</option>
+  <option value="TRANSIT">Transit</option>
+  <option value="BICYCLING">Cycling</option>
+</select>
+
+<!-- NEW: Place Autocomplete Elements -->
+<gmp-place-autocomplete id="from" placeholder="Start"></gmp-place-autocomplete>
+<gmp-place-autocomplete id="to" placeholder="Destination"></gmp-place-autocomplete>
+
+<button onclick="calculateRoute()">Find Route</button>
+
+<div id="map"></div>
+<div id="output"></div>
+
+<script>
+let map, directionsService, directionsRenderer;
+
+function initMap() {
+  map = new google.maps.Map(document.getElementById("map"), {
+    center: { lat: 1.3521, lng: 103.8198 },
+    zoom: 12,
+  });
+
+  directionsService = new google.maps.DirectionsService();
+  directionsRenderer = new google.maps.DirectionsRenderer();
+  directionsRenderer.setMap(map);
+}
+
+function calculateRoute() {
+  const fromPlace = document.getElementById("from").value;
+  const toPlace = document.getElementById("to").value;
+  const mode = document.getElementById("mode").value;
+
+  directionsService.route({
+    origin: fromPlace,
+    destination: toPlace,
+    travelMode: mode
+  }, (result, status) => {
+    if (status === "OK") {
+      directionsRenderer.setDirections(result);
+      const route = result.routes[0].legs[0];
+      document.getElementById("output").innerHTML =
+        `Distance: ${route.distance.text} <br> Duration: ${route.duration.text}`;
+    } else {
+      alert("Route not found");
+    }
+  });
+}
+</script>
+
+<!-- IMPORTANT: load Maps JS with places -->
+<script async
+  src="https://maps.googleapis.com/maps/api/js?key=AIzaSyAiPGU_e3G60QLwrPKteThZ3BzS1hkLrdI&libraries=places&callback=initMap">
+
+</script>
+
+</body>
+</html>
